@@ -12,6 +12,8 @@ import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
+import java.util.UUID
+import java.security.MessageDigest
 
 class GoogleSignInNativeUtils {
     private lateinit var credentialManager: CredentialManager
@@ -65,16 +67,26 @@ class GoogleSignInNativeUtils {
             )
         }
 
+        val rawNonce = UUID.randomUUID().toString()
+        val bytes = rawNonce.toByteArray()
+        val md = MessageDigest.getInstance("SHA-256")
+        val digest = md.digest(bytes)
+        val nonce = digest.fold("") { str, it -> str + "%02x".format(it) }
+
         val googleCredentialOption = if (useButtonFlow) {
             GetSignInWithGoogleOption.Builder(serverClientID)
-                .setNonce(System.currentTimeMillis().toString())
-                .setIdTokenDepositionScopes(scopes)
+                .setRequestedScopes(scopes)
+                .apply {
+                    if (!scopes.isNullOrEmpty()) setRequestedScopes(scopes)
+                }
+                .setNonce(nonce)
                 .build()
         } else {
             GetGoogleIdOption.Builder()
                 .setFilterByAuthorizedAccounts(false)
-                .setNonce(System.currentTimeMillis().toString())
                 .setServerClientId(serverClientID)
+                .setAutoSelectEnabled(true)
+                .setNonce(nonce)
                 .build()
         }
 

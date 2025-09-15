@@ -38,7 +38,7 @@ class GoogleSignInNativePlugin :
     }
 
     override fun onMethodCall(call: MethodCall, result: Result) {
-        when (call.methos) {
+        when (call.method) {
             "getPlatformVersion" -> {
                 result.success("Android ${android.os.Build.VERSION.RELEASE}")
             }

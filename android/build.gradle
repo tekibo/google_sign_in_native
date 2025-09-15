@@ -1,3 +1,5 @@
+package android
+
 group = "com.trkibo.google_sign_in_native"
 version = "1.0-SNAPSHOT"
 
@@ -67,13 +69,9 @@ android {
 
 dependencies {
     implementation 'androidx.annotation:annotation:1.9.1'
-    //jetpack credential Manager
     implementation "androidx.credentials:credentials:1.5.0"
-    // optional - needed for credentials support from play services, for devices running
-    // Android 13 and below.
     implementation "androidx.credentials:credentials-play-services-auth:1.5.0"
-    //For google sign in
     implementation "com.google.android.libraries.identity.googleid:googleid:1.1.1"
-    //Co-routine
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+    implementation("androidx.activity:activity-ktx:1.11.0")
 }
