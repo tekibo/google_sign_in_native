@@ -2,12 +2,16 @@ package com.trkibo.google_sign_in_native
 
 import android.content.Context
 import android.util.Log
+
+import androidx.activity.result.contract.ActivityResultContracts
+
 import androidx.credentials.*
 import androidx.credentials.exceptions.CreateCredentialCancellationException
 import androidx.credentials.exceptions.CreateCredentialException
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.NoCredentialException
+
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
@@ -16,10 +20,11 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingExcept
 import com.google.android.gms.auth.api.identity.AuthorizationClient
 import com.google.android.gms.auth.api.identity.AuthorizationRequest
 import com.google.android.gms.auth.api.identity.AuthorizationResult
+import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.Scope
-import androidx.activity.result.contract.ActivityResultContracts
 
+import androidx.activity.result.IntentSenderRequest
 import java.util.UUID
 import java.security.MessageDigest
 
@@ -196,9 +201,12 @@ class GoogleSignInNativeUtils {
             .build()
 
         // Register ActivityResultLauncher
-        val launcher = activity!!.registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+        val launcher = activity!!.registerForActivityResult(
+            ActivityResultContracts.StartIntentSenderForResult()
+        ) { result ->
             try {
-                val authorizationResult = AuthorizationClient.getAuthorizationResultFromIntent(result.data)
+                val authorizationResult = Identity.getAuthorizationClient(activity!!)
+                    .getAuthorizationResultFromIntent(result.data)
                 callback(
                     GoogleAuthorizationResult(
                         accessToken = authorizationResult.accessToken,
@@ -216,7 +224,7 @@ class GoogleSignInNativeUtils {
                         error = GoogleSignInNativeExceptions(
                             code = 602,
                             message = "Authorization failed",
-                            details = e.localizedMessage
+                            details = e.message
                         )
                     )
                 )
@@ -224,14 +232,14 @@ class GoogleSignInNativeUtils {
         }
 
         // Start authorization
-        AuthorizationClient.getAuthorizationClient(activity!!)
+        Identity.getAuthorizationClient(activity!!)
             .authorize(authorizationRequest)
-            .addOnSuccessListener { authorizationResult ->
+            .addOnSuccessListener { authorizationResult: AuthorizationResult ->
                 if (authorizationResult.hasResolution()) {
                     // User needs to grant access
                     val pendingIntent = authorizationResult.pendingIntent
                     launcher.launch(
-                        IntentSenderRequest.Builder(pendingIntent!!.intentSender).build()
+                        IntentSenderRequest.Builder(pendingIntent.intentSender).build()
                     )
                 } else {
                     // Access already granted
@@ -245,7 +253,7 @@ class GoogleSignInNativeUtils {
                     )
                 }
             }
-            .addOnFailureListener { e ->
+            .addOnFailureListener { e: Exception ->
                 callback(
                     GoogleAuthorizationResult(
                         accessToken = null,
@@ -254,7 +262,7 @@ class GoogleSignInNativeUtils {
                         error = GoogleSignInNativeExceptions(
                             code = 602,
                             message = "Authorization failed",
-                            details = e.localizedMessage
+                            details = e.message
                         )
                     )
                 )
