@@ -76,9 +76,6 @@ class GoogleSignInNativeUtils {
         val googleCredentialOption = if (useButtonFlow) {
             GetSignInWithGoogleOption.Builder(serverClientID)
                 .setRequestedScopes(scopes)
-                .apply {
-                    if (!scopes.isNullOrEmpty()) setRequestedScopes(scopes)
-                }
                 .setNonce(nonce)
                 .build()
         } else {
