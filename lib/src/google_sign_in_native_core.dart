@@ -26,9 +26,18 @@ class GoogleSignInNative {
   ///
   /// Returns a [Future] that completes with [GoogleIdTokenCredential] representing the saved Google credentials.
   Future<GoogleIdTokenCredential?> googleSignIn(
-      {bool useButtonFlow = false, List<String> scopes = const [],}) async {
+      {bool useButtonFlow = false}) async {
     return GoogleSignInNativePlatform.instance
-        .googleSignIn(useButtonFlow, scopes);
+        .googleSignIn(useButtonFlow);
+  }
+
+  /// Authorizes additional Google OAuth scopes.
+  Future<GoogleAuthorizationResult> authorizeScopes({
+    required List<String> scopes,
+    required bool requestOfflineAccess,
+  }) {
+    return GoogleSignInNativePlatform.instance
+        .authorizeScopes(scopes, requestOfflineAccess);
   }
 
   /// Logs out the user.

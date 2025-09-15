@@ -22,11 +22,18 @@ class MockGoogleSignInNativePlatform
   }
 
   @override
-  Future<GoogleIdTokenCredential?> googleSignIn(bool useButtonFlow, List<String>scopes) {
+  Future<GoogleIdTokenCredential?> googleSignIn(bool useButtonFlow) {
     // TODO: implement saveGoogleCredential
     throw UnimplementedError();
   }
+
+  @override
+  Future<GoogleAuthorizationResult> authorizeScopes(List<String> scopes, bool requestOfflineAccess) {
+    // TODO: implement authorizeScopes
+    throw UnimplementedError();
+  }
 }
+
 
 void main() {
   final GoogleSignInNativePlatform initialPlatform = GoogleSignInNativePlatform.instance;

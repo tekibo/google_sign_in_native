@@ -26,6 +26,17 @@ class GoogleSignInNativeException implements Exception {
   GoogleSignInNativeException({
     required this.code,
     required this.message,
-    required this.details,
+    this.details, // Made optional to align with usage
   });
+
+  /// Converts the exception to a JSON-compatible map.
+  Map<String, dynamic> toJson() => {
+    'code': code,
+    'message': message,
+    'details': details?.toString(), // Convert dynamic details to string
+  };
+
+  @override
+  String toString() =>
+      'GoogleSignInNativeException(code: $code, message: $message, details: $details)';
 }
