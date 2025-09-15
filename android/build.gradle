@@ -1,5 +1,3 @@
-package android
-
 group = "com.trkibo.google_sign_in_native"
 version = "1.0-SNAPSHOT"
 

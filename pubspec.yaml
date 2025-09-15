@@ -1,6 +1,6 @@
 name: google_sign_in_native
 description: "Native implementation of google sign in for flutter apps"
-version: 0.0.4
+version: 0.0.5
 homepage:
 
 environment:
