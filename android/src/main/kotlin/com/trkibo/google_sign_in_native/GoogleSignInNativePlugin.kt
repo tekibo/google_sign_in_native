@@ -148,17 +148,21 @@ class GoogleSignInNativePlugin :
 
     override fun onAttachedToActivity(p0: ActivityPluginBinding) {
         activity = p0.activity
+        utils.setActivity(activity)
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
         activity = null
+        utils.setActivity(null)
     }
 
     override fun onReattachedToActivityForConfigChanges(p0: ActivityPluginBinding) {
         activity = p0.activity
+        utils.setActivity(activity)
     }
 
     override fun onDetachedFromActivity() {
         activity = null
+        utils.setActivity(null)
     }
 }

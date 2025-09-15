@@ -1,24 +1,21 @@
 package com.trkibo.google_sign_in_native
 
+import android.app.Activity
+
 import android.content.Context
 import android.util.Log
-
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.result.ActivityResult
 
 import androidx.credentials.*
 import androidx.credentials.exceptions.CreateCredentialCancellationException
 import androidx.credentials.exceptions.CreateCredentialException
-import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialException
-import androidx.credentials.exceptions.NoCredentialException
-
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 
-//import com.google.android.gms.auth.api.identity.AuthorizationClient
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import com.google.android.gms.auth.api.identity.AuthorizationRequest
 import com.google.android.gms.auth.api.identity.AuthorizationResult
 import com.google.android.gms.auth.api.identity.Identity
@@ -145,6 +142,7 @@ class GoogleSignInNativeUtils {
             ), null
         )
     }
+
 
     /**
      * Authorize additional Google scopes.
@@ -284,7 +282,6 @@ class GoogleSignInNativeUtils {
                 )
             }
     }
-
 
     /**
      * Logout the user.
