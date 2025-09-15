@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.ActivityResult
 
 import androidx.credentials.*
 import androidx.credentials.exceptions.CreateCredentialCancellationException
@@ -17,7 +18,7 @@ import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 
-import com.google.android.gms.auth.api.identity.AuthorizationClient
+//import com.google.android.gms.auth.api.identity.AuthorizationClient
 import com.google.android.gms.auth.api.identity.AuthorizationRequest
 import com.google.android.gms.auth.api.identity.AuthorizationResult
 import com.google.android.gms.auth.api.identity.Identity
@@ -203,7 +204,7 @@ class GoogleSignInNativeUtils {
         // Register ActivityResultLauncher
         val launcher = activity!!.registerForActivityResult(
             ActivityResultContracts.StartIntentSenderForResult()
-        ) { result ->
+        ) { result: ActivityResult ->
             try {
                 val authorizationResult = Identity.getAuthorizationClient(activity!!)
                     .getAuthorizationResultFromIntent(result.data)
@@ -211,7 +212,7 @@ class GoogleSignInNativeUtils {
                     GoogleAuthorizationResult(
                         accessToken = authorizationResult.accessToken,
                         serverAuthCode = authorizationResult.serverAuthCode,
-                        grantedScopes = authorizationResult.grantedScopes?.map { it.scopeUri },
+                        grantedScopes = authorizationResult.grantedScopes?.map { it.toString() },
                         error = null
                     )
                 )
@@ -238,16 +239,31 @@ class GoogleSignInNativeUtils {
                 if (authorizationResult.hasResolution()) {
                     // User needs to grant access
                     val pendingIntent = authorizationResult.pendingIntent
-                    launcher.launch(
-                        IntentSenderRequest.Builder(pendingIntent.intentSender).build()
-                    )
+                    if (pendingIntent != null) {
+                        launcher.launch(
+                            IntentSenderRequest.Builder(pendingIntent.intentSender).build()
+                        )
+                    } else {
+                        callback(
+                            GoogleAuthorizationResult(
+                                accessToken = null,
+                                serverAuthCode = null,
+                                grantedScopes = null,
+                                error = GoogleSignInNativeExceptions(
+                                    code = 602,
+                                    message = "Authorization failed",
+                                    details = "PendingIntent is null"
+                                )
+                            )
+                        )
+                    }
                 } else {
                     // Access already granted
                     callback(
                         GoogleAuthorizationResult(
                             accessToken = authorizationResult.accessToken,
                             serverAuthCode = authorizationResult.serverAuthCode,
-                            grantedScopes = authorizationResult.grantedScopes?.map { it.scopeUri },
+                            grantedScopes = authorizationResult.grantedScopes?.map { it.toString() },
                             error = null
                         )
                     )
@@ -268,6 +284,7 @@ class GoogleSignInNativeUtils {
                 )
             }
     }
+
 
     /**
      * Logout the user.
