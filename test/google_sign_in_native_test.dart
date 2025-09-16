@@ -16,12 +16,6 @@ class MockGoogleSignInNativePlatform
   }
 
   @override
-  Future<void> logout() {
-    // TODO: implement logout
-    throw UnimplementedError();
-  }
-
-  @override
   Future<GoogleIdTokenCredential?> googleSignIn(bool useButtonFlow) {
     // TODO: implement saveGoogleCredential
     throw UnimplementedError();
@@ -49,7 +43,4 @@ void main() {
 
   });
 
-  test('logout', () async {
-
-  });
 }

@@ -56,21 +56,6 @@ class MethodChannelGoogleSignInNative extends GoogleSignInNativePlatform {
     }
   }
 
-
-  /// Logs out the user.
-  @override
-  Future<void> logout() async {
-    final res = await methodChannel.invokeMethod<String>('logout');
-    if (res != null && res == "Logout successful") {
-      return;
-    }
-    throw GoogleSignInNativeException(
-      code: 504,
-      message: "Logout failed",
-      details: null,
-    );
-  }
-
   /// Handles PlatformException and returns appropriate GoogleSignInNativeException based on error codes.
   ///
   /// This function maps error codes from the PlatformException to human-readable messages and returns

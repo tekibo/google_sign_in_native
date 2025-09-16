@@ -44,9 +44,4 @@ abstract class GoogleSignInNativePlatform extends PlatformInterface {
     return _instance.googleSignIn(useButtonFlow);
   }
 
-
-  //Logout
-  Future<void> logout() async {
-    return _instance.logout();
-  }
 }

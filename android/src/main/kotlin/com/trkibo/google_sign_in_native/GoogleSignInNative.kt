@@ -1,21 +1,24 @@
 package com.trkibo.google_sign_in_native
 
+import android.content.ContentValues
 import android.content.Context
+import android.credentials.GetCredentialException
+import android.os.Build
 import android.util.Log
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 
 import androidx.credentials.*
-import androidx.credentials.exceptions.CreateCredentialCancellationException
-import androidx.credentials.exceptions.CreateCredentialException
-import androidx.credentials.exceptions.GetCredentialException
+import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.credentials.exceptions.GetCredentialCustomException
+import androidx.credentials.exceptions.NoCredentialException
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
-
-import androidx.activity.result.ActivityResult
-
-import java.util.UUID
-import java.security.MessageDigest
+import kotlinx.coroutines.delay
+import java.security.SecureRandom
+import java.util.Base64
 
 class GoogleSignInNativeUtils {
     private lateinit var credentialManager: CredentialManager
@@ -54,6 +57,7 @@ class GoogleSignInNativeUtils {
      * @return A Pair containing either null and deserialized GoogleIdTokenCredential
      * or GoogleSignInNativeExceptions and null if an error occurs.
      */
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     suspend fun saveGoogleCredentials(
         useButtonFlow: Boolean,
         context: Context
@@ -68,34 +72,11 @@ class GoogleSignInNativeUtils {
             )
         }
 
-        val rawNonce = UUID.randomUUID().toString()
-        val bytes = rawNonce.toByteArray()
-        val md = MessageDigest.getInstance("SHA-256")
-        val digest = md.digest(bytes)
-        val nonce = digest.fold("") { str, it -> str + "%02x".format(it) }
-
-        val googleCredentialOption = if (useButtonFlow) {
-            GetSignInWithGoogleOption.Builder(serverClientID)
-                .setNonce(nonce)
-                .build()
+        val result = if (useButtonFlow) {
+            signInWithButton(context, webclientId = serverClientID)
         } else {
-            GetGoogleIdOption.Builder()
-                .setFilterByAuthorizedAccounts(false)
-                .setServerClientId(serverClientID)
-                .setAutoSelectEnabled(true)
-                .setNonce(nonce)
-                .build()
+            signInAutomatic(context, webclientId = serverClientID)
         }
-
-        val request: GetCredentialRequest = GetCredentialRequest.Builder()
-            .addCredentialOption(googleCredentialOption)
-            .build()
-
-        Log.d("GoogleSignInNative", "$request")
-        val result = credentialManager.getCredential(
-            request = request,
-            context = context,
-        )
 
         when (val credential = result.credential) {
             is CustomCredential -> {
@@ -127,26 +108,77 @@ class GoogleSignInNativeUtils {
         )
     }
 
+}
 
-    /**
-     * Logout the user.
-     *
-     * @return A Pair containing either null and a success message or GoogleSignInNativeExceptions and an empty string.
-     */
-    suspend fun logout(): Pair<GoogleSignInNativeExceptions?, String> {
-        return try {
-            credentialManager.clearCredentialState(
-                ClearCredentialStateRequest()
-            )
-            Pair(null, "Logout successful")
-        } catch (e: Exception) {
-            Pair(
-                GoogleSignInNativeExceptions(
-                    code = 701,
-                    message = "Logout failed",
-                    details = e.localizedMessage
-                ), ""
-            )
-        }
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+suspend fun signInWithButton(
+    context: Context,
+    webclientId: String,
+): GetCredentialResponse {
+    val googleCredentialOption = GetSignInWithGoogleOption.Builder(webclientId)
+        .setNonce(generateSecureRandomNonce())
+        .build()
+    val request: GetCredentialRequest = GetCredentialRequest.Builder()
+        .addCredentialOption(googleCredentialOption)
+        .build()
+    val credentialManager = CredentialManager.create(context)
+
+    val result = credentialManager.getCredential(
+        request = request,
+        context = context,
+    )
+    return result
+}
+
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+suspend fun signInAutomatic(
+    context: Context,
+    webclientId: String,
+): GetCredentialResponse {
+    val request: GetCredentialRequest =
+        getCredentials(firstTime = true, webclientId)
+    val credentialManager = CredentialManager.create(context)
+
+    delay(250)
+
+    try {
+        val result = credentialManager.getCredential(
+            request = request,
+            context = context,
+        )
+        return result
+    } catch (e: NoCredentialException) {
+        val requestFalse: GetCredentialRequest =
+            getCredentials(firstTime = false, webclientId)
+        val resultFalse = credentialManager.getCredential(
+            request = requestFalse,
+            context = context,
+        )
+        return resultFalse
     }
+
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun getCredentials(
+    firstTime: Boolean,
+    webClientId: String
+): GetCredentialRequest {
+    val googleIdOption =
+        GetGoogleIdOption.Builder()
+            .setFilterByAuthorizedAccounts(firstTime)
+            .setServerClientId(webClientId)
+            .setNonce(generateSecureRandomNonce())
+            .build()
+
+    return GetCredentialRequest.Builder()
+        .addCredentialOption(googleIdOption)
+        .build()
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun generateSecureRandomNonce(byteLength: Int = 32): String {
+    val randomBytes = ByteArray(byteLength)
+    SecureRandom.getInstanceStrong().nextBytes(randomBytes)
+    return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes)
 }

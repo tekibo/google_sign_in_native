@@ -20,22 +20,12 @@ class GoogleSignInNative {
   }
 
   /// Saves Google credentials.
-  ///
   /// [useButtonFlow] - Whether to use the button flow for saving Google credentials.
-  /// [scopes] - A list of scopes to request.
-  ///
   /// Returns a [Future] that completes with [GoogleIdTokenCredential] representing the saved Google credentials.
   Future<GoogleIdTokenCredential?> googleSignIn(
       {bool useButtonFlow = false}) async {
     return GoogleSignInNativePlatform.instance
         .googleSignIn(useButtonFlow);
-  }
-
-  /// Logs out the user.
-  ///
-  /// Returns a [Future] that completes when the user is successfully logged out.
-  Future<void> logout() async {
-    return GoogleSignInNativePlatform.instance.logout();
   }
 
   /// Checks if the Credential Manager is supported on the current platform.

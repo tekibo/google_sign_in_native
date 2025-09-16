@@ -53,7 +53,6 @@ class GoogleSignInNativePlugin :
                 try {
                     when (call.method) {
                         "google_sign_in" -> handleGoogleSignIn(call, result)
-                        "logout" -> handleLogout(result)
                         else -> result.notImplemented()
 
                     }
@@ -89,6 +88,7 @@ class GoogleSignInNativePlugin :
             )
 
         if (exception != null) {
+            if(exception )
             result.error(exception.code.toString(), exception.message, exception.details)
         } else {
             val credentialMap = mapOf(
@@ -105,15 +105,6 @@ class GoogleSignInNativePlugin :
         }
     }
 
-
-    private suspend fun handleLogout(result: Result) {
-        val (exception: GoogleSignInNativeExceptions?, message: String) = utils.logout()
-        if (exception != null) {
-            result.error(exception.code.toString(), exception.message, exception.details)
-        } else {
-            result.success(message)
-        }
-    }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
