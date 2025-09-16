@@ -17,13 +17,6 @@ import androidx.activity.result.ActivityResult
 import java.util.UUID
 import java.security.MessageDigest
 
-data class GoogleAuthorizationResult(
-    val accessToken: String?,
-    val serverAuthCode: String?,
-    val grantedScopes: List<String>?,
-    val error: GoogleSignInNativeExceptions?
-)
-
 class GoogleSignInNativeUtils {
     private lateinit var credentialManager: CredentialManager
     private var preferImmediatelyAvailableCredentials: Boolean = true
