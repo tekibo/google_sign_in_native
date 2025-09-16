@@ -31,15 +31,6 @@ class GoogleSignInNative {
         .googleSignIn(useButtonFlow);
   }
 
-  /// Authorizes additional Google OAuth scopes.
-  Future<GoogleAuthorizationResult> authorizeScopes({
-    required List<String> scopes,
-    required bool requestOfflineAccess,
-  }) {
-    return GoogleSignInNativePlatform.instance
-        .authorizeScopes(scopes, requestOfflineAccess);
-  }
-
   /// Logs out the user.
   ///
   /// Returns a [Future] that completes when the user is successfully logged out.

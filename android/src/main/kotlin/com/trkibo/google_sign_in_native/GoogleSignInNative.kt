@@ -1,7 +1,5 @@
 package com.trkibo.google_sign_in_native
 
-import android.app.Activity
-
 import android.content.Context
 import android.util.Log
 
@@ -15,14 +13,7 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 
 import androidx.activity.result.ActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import com.google.android.gms.auth.api.identity.AuthorizationRequest
-import com.google.android.gms.auth.api.identity.AuthorizationResult
-import com.google.android.gms.auth.api.identity.Identity
-import com.google.android.gms.common.api.ApiException
-import com.google.android.gms.common.api.Scope
 
-import androidx.activity.result.IntentSenderRequest
 import java.util.UUID
 import java.security.MessageDigest
 
@@ -143,145 +134,6 @@ class GoogleSignInNativeUtils {
         )
     }
 
-
-    /**
-     * Authorize additional Google scopes.
-     *
-     * @param scopes List of scopes to request (e.g., ["email", "profile"]).
-     * @param requestOfflineAccess Whether to request a server auth code for offline access.
-     * @param callback Callback to handle the authorization result.
-     */
-    fun authorizeGoogleScopes(
-        scopes: List<String>,
-        requestOfflineAccess: Boolean,
-        callback: (GoogleAuthorizationResult) -> Unit
-    ) {
-        if (activity == null) {
-            callback(
-                GoogleAuthorizationResult(
-                    accessToken = null,
-                    serverAuthCode = null,
-                    grantedScopes = null,
-                    error = GoogleSignInNativeExceptions(
-                        code = 601,
-                        message = "Activity not available",
-                        details = "Authorization requires an active Activity"
-                    )
-                )
-            )
-            return
-        }
-
-        if (!this::serverClientID.isInitialized) {
-            callback(
-                GoogleAuthorizationResult(
-                    accessToken = null,
-                    serverAuthCode = null,
-                    grantedScopes = null,
-                    error = GoogleSignInNativeExceptions(
-                        code = 503,
-                        message = "Google client is not initialized yet",
-                        details = "Check if Google credentials is provided"
-                    )
-                )
-            )
-            return
-        }
-
-        // Convert string scopes to Google API Scope objects
-        val requestedScopes = scopes.map { Scope(it) }
-        val authorizationRequest = AuthorizationRequest.Builder()
-            .setRequestedScopes(requestedScopes)
-            .apply {
-                if (requestOfflineAccess) {
-                    requestOfflineAccess(serverClientID)
-                }
-            }
-            .build()
-
-        // Register ActivityResultLauncher
-        val launcher = activity!!.registerForActivityResult(
-            ActivityResultContracts.StartIntentSenderForResult()
-        ) { result: ActivityResult ->
-            try {
-                val authorizationResult = Identity.getAuthorizationClient(activity!!)
-                    .getAuthorizationResultFromIntent(result.data)
-                callback(
-                    GoogleAuthorizationResult(
-                        accessToken = authorizationResult.accessToken,
-                        serverAuthCode = authorizationResult.serverAuthCode,
-                        grantedScopes = authorizationResult.grantedScopes?.map { it.toString() },
-                        error = null
-                    )
-                )
-            } catch (e: ApiException) {
-                callback(
-                    GoogleAuthorizationResult(
-                        accessToken = null,
-                        serverAuthCode = null,
-                        grantedScopes = null,
-                        error = GoogleSignInNativeExceptions(
-                            code = 602,
-                            message = "Authorization failed",
-                            details = e.message
-                        )
-                    )
-                )
-            }
-        }
-
-        // Start authorization
-        Identity.getAuthorizationClient(activity!!)
-            .authorize(authorizationRequest)
-            .addOnSuccessListener { authorizationResult: AuthorizationResult ->
-                if (authorizationResult.hasResolution()) {
-                    // User needs to grant access
-                    val pendingIntent = authorizationResult.pendingIntent
-                    if (pendingIntent != null) {
-                        launcher.launch(
-                            IntentSenderRequest.Builder(pendingIntent.intentSender).build()
-                        )
-                    } else {
-                        callback(
-                            GoogleAuthorizationResult(
-                                accessToken = null,
-                                serverAuthCode = null,
-                                grantedScopes = null,
-                                error = GoogleSignInNativeExceptions(
-                                    code = 602,
-                                    message = "Authorization failed",
-                                    details = "PendingIntent is null"
-                                )
-                            )
-                        )
-                    }
-                } else {
-                    // Access already granted
-                    callback(
-                        GoogleAuthorizationResult(
-                            accessToken = authorizationResult.accessToken,
-                            serverAuthCode = authorizationResult.serverAuthCode,
-                            grantedScopes = authorizationResult.grantedScopes?.map { it.toString() },
-                            error = null
-                        )
-                    )
-                }
-            }
-            .addOnFailureListener { e: Exception ->
-                callback(
-                    GoogleAuthorizationResult(
-                        accessToken = null,
-                        serverAuthCode = null,
-                        grantedScopes = null,
-                        error = GoogleSignInNativeExceptions(
-                            code = 602,
-                            message = "Authorization failed",
-                            details = e.message
-                        )
-                    )
-                )
-            }
-    }
 
     /**
      * Logout the user.

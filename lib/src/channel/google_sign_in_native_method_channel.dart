@@ -56,42 +56,6 @@ class MethodChannelGoogleSignInNative extends GoogleSignInNativePlatform {
     }
   }
 
-  /// Authorizes Google scopes.
-  @override
-  Future<GoogleAuthorizationResult> authorizeScopes(
-      List<String> scopes,
-      bool requestOfflineAccess,
-      ) async {
-    try {
-      final res = await methodChannel.invokeMethod<Map<Object?, Object?>>(
-        'authorize_scopes',
-        {
-          'scopes': scopes,
-          'requestOfflineAccess': requestOfflineAccess,
-        },
-      );
-
-      if (res == null) {
-        throw GoogleSignInNativeException(
-          code: 602,
-          message: "Authorization failed",
-          details: "Null response received",
-        );
-      }
-
-      final result = GoogleAuthorizationResult.fromJson(
-        jsonDecode(jsonEncode(res)) as Map<String, dynamic>,
-      );
-
-      if (result.error != null) {
-        throw result.error!;
-      }
-
-      return result;
-    } on PlatformException catch (e) {
-      throw handlePlatformException(e);
-    }
-  }
 
   /// Logs out the user.
   @override
@@ -196,18 +160,6 @@ class MethodChannelGoogleSignInNative extends GoogleSignInNativePlatform {
         return GoogleSignInNativeException(
           code: 505,
           message: "Google credential decode error",
-          details: e.details,
-        );
-      case "601":
-        return GoogleSignInNativeException(
-          code: 601,
-          message: "Activity not available",
-          details: e.details,
-        );
-      case "602":
-        return GoogleSignInNativeException(
-          code: 602,
-          message: "Authorization failed",
           details: e.details,
         );
       default:

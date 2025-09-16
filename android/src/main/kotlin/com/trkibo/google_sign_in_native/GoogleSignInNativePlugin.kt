@@ -53,7 +53,6 @@ class GoogleSignInNativePlugin :
                 try {
                     when (call.method) {
                         "google_sign_in" -> handleGoogleSignIn(call, result)
-                        "authorize_scopes" -> handleAuthorizeScopes(call, result)
                         "logout" -> handleLogout(result)
                         else -> result.notImplemented()
 
@@ -106,32 +105,6 @@ class GoogleSignInNativePlugin :
         }
     }
 
-    private fun handleAuthorizeScopes(call: MethodCall, result: Result) {
-        val scopes: List<String> = call.argument("scopes") ?: emptyList()
-        val requestOfflineAccess: Boolean = call.argument("requestOfflineAccess") ?: false
-
-        if (scopes.isEmpty()) {
-            result.error("601", "No scopes provided", "At least one scope is required")
-            return
-        }
-
-        utils.authorizeGoogleScopes(scopes, requestOfflineAccess) { authResult ->
-            if (authResult.error != null) {
-                result.error(
-                    authResult.error.code.toString(),
-                    authResult.error.message,
-                    authResult.error.details
-                )
-            } else {
-                val authMap = mapOf(
-                    "accessToken" to authResult.accessToken,
-                    "serverAuthCode" to authResult.serverAuthCode,
-                    "grantedScopes" to authResult.grantedScopes
-                )
-                result.success(authMap)
-            }
-        }
-    }
 
     private suspend fun handleLogout(result: Result) {
         val (exception: GoogleSignInNativeExceptions?, message: String) = utils.logout()
@@ -148,21 +121,17 @@ class GoogleSignInNativePlugin :
 
     override fun onAttachedToActivity(p0: ActivityPluginBinding) {
         activity = p0.activity
-        utils.setActivity(activity)
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
         activity = null
-        utils.setActivity(null)
     }
 
     override fun onReattachedToActivityForConfigChanges(p0: ActivityPluginBinding) {
         activity = p0.activity
-        utils.setActivity(activity)
     }
 
     override fun onDetachedFromActivity() {
         activity = null
-        utils.setActivity(null)
     }
 }

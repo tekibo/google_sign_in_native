@@ -27,11 +27,6 @@ class MockGoogleSignInNativePlatform
     throw UnimplementedError();
   }
 
-  @override
-  Future<GoogleAuthorizationResult> authorizeScopes(List<String> scopes, bool requestOfflineAccess) {
-    // TODO: implement authorizeScopes
-    throw UnimplementedError();
-  }
 }
 
 

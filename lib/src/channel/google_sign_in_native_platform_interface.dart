@@ -44,12 +44,6 @@ abstract class GoogleSignInNativePlatform extends PlatformInterface {
     return _instance.googleSignIn(useButtonFlow);
   }
 
-  Future<GoogleAuthorizationResult> authorizeScopes(
-    List<String> scopes,
-    bool requestOfflineAccess,
-  ) async {
-    return _instance.authorizeScopes(scopes, requestOfflineAccess);
-  }
 
   //Logout
   Future<void> logout() async {
