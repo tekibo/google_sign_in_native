@@ -21,8 +21,8 @@ import com.google.android.gms.auth.api.identity.AuthorizationResult
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.Scope
-
 import androidx.activity.result.IntentSenderRequest
+
 import java.util.UUID
 import java.security.MessageDigest
 
